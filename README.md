@@ -10,6 +10,24 @@ The goal is to make practice sessions easier to inspect after the fact: what
 track you flew, where a run started and ended, how fast you were moving, where
 you hit obstacles, and how individual race sessions compare over time.
 
+## Screenshots
+
+### 3D Flight Visualization
+
+![3D flight path visualization with collider wireframes, guide path, lap traces, and impact markers](docs/screenshots/race-details-visualize.png)
+
+### Race Details
+
+![Race detail page showing best-lap summary, course map, incident markers, and flight recorder graph](docs/screenshots/race-details-graphs.png)
+
+### Race Timing
+
+![Race detail page showing lap and gate split timing analysis](docs/screenshots/race-details-laps.png)
+
+### Settings
+
+![Settings page showing telemetry endpoint and game install tracking](docs/screenshots/settings.png)
+
 ## Status
 
 This repository is 100% vibe-coded as an experiment. Expect rough edges,
