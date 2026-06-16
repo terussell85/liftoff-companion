@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Setup — track toggle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --radius: 0.5rem;
+        --background: oklch(0.165 0.006 256);
+        --foreground: oklch(0.93 0.004 256);
+        --card: oklch(0.205 0.007 256);
+        --signal: oklch(0.86 0.19 128);
+        --secondary: oklch(0.26 0.006 256);
+        --muted: oklch(0.245 0.006 256);
+        --muted-foreground: oklch(0.64 0.012 256);
+        --accent: oklch(0.275 0.007 256);
+        --destructive: oklch(0.64 0.21 22);
+        --warn: oklch(0.8 0.15 78);
+        --border: oklch(1 0 0 / 9%);
+        --border-strong: oklch(1 0 0 / 16%);
+        --input: oklch(1 0 0 / 13%);
+        --font-sans: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        min-height: 100vh; font-family: var(--font-sans); color: var(--foreground);
+        background-image: radial-gradient(130% 90% at 50% -15%, oklch(0.23 0.02 256 / 0.7), transparent 62%), var(--background);
+        -webkit-font-smoothing: antialiased; position: relative; padding: 34px 28px 90px;
+      }
+      body::before {
+        content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background-image: linear-gradient(to right, oklch(1 0 0 / 0.02) 1px, transparent 1px),
+          linear-gradient(to bottom, oklch(1 0 0 / 0.02) 1px, transparent 1px);
+        background-size: 34px 34px;
+        -webkit-mask-image: radial-gradient(125% 95% at 50% 0%, black, transparent 78%);
+        mask-image: radial-gradient(125% 95% at 50% 0%, black, transparent 78%);
+      }
+      .wrap { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; }
+      ::selection { background: oklch(0.86 0.19 128 / 0.25); }
+
+      .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--signal); }
+      .mono { font-family: var(--font-mono); }
+      .muted { color: var(--muted-foreground); }
+      .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-foreground); font-weight: 500; }
+      .footnote { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
+
+      .panel {
+        background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+        box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.3);
+        background-image: linear-gradient(to bottom, oklch(1 0 0 / 0.012), transparent 120px);
+      }
+      .panel > header {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        min-height: 40px; padding: 8px 16px; border-bottom: 1px solid var(--border);
+      }
+      .panel > header h2 {
+        font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+        text-transform: uppercase; color: var(--muted-foreground); display: flex; align-items: center; gap: 9px;
+      }
+      .panel > .body { padding: 16px; }
+
+      .dot { width: 6px; height: 6px; border-radius: 99px; flex: none; }
+      .dot.on { background: var(--signal); box-shadow: 0 0 6px oklch(0.86 0.19 128 / 0.6); }
+      .dot.off { background: oklch(0.64 0.012 256 / 0.4); }
+      .dot.warn { background: var(--warn); box-shadow: 0 0 6px oklch(0.8 0.15 78 / 0.45); }
+      .dot.err { background: var(--destructive); box-shadow: 0 0 6px oklch(0.64 0.21 22 / 0.5); }
+
+      .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 6px;
+        padding: 4px 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted-foreground); background: oklch(0.245 0.006 256 / 0.4); }
+      .chip.live { border-color: oklch(0.86 0.19 128 / 0.4); background: oklch(0.86 0.19 128 / 0.1); color: var(--signal); }
+
+      .badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+        padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted-foreground); }
+
+      .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-family: var(--font-sans);
+        font-size: 13px; font-weight: 500; border-radius: 7px; padding: 7px 12px; border: 1px solid var(--border-strong);
+        background: var(--secondary); color: var(--foreground); cursor: pointer; transition: all 0.15s; }
+      .btn:hover { background: var(--accent); }
+      .btn.sm { font-size: 12px; padding: 5px 10px; }
+      .btn.xs { font-size: 11px; padding: 3px 9px; }
+      .btn.primary { background: var(--signal); color: oklch(0.2 0.05 128); border-color: transparent; font-weight: 600; }
+      .btn.primary:hover { filter: brightness(1.08); }
+      .btn.ghost { background: transparent; border-color: transparent; color: var(--muted-foreground); }
+      .btn.ghost:hover { color: var(--foreground); background: var(--accent); }
+      .btn.danger { color: var(--destructive); border-color: oklch(0.64 0.21 22 / 0.4); background: oklch(0.64 0.21 22 / 0.08); }
+      .btn.warnlink { color: var(--warn); border-color: oklch(0.8 0.15 78 / 0.4); background: oklch(0.8 0.15 78 / 0.08); }
+
+      .input { font-family: var(--font-mono); font-size: 13px; background: oklch(0 0 0 / 0.2);
+        border: 1px solid var(--input); border-radius: 7px; padding: 7px 10px; color: var(--foreground); }
+      .input:focus { outline: none; border-color: oklch(0.86 0.19 128 / 0.5); }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+
+      /* ---- the track switch ---- */
+      .switch { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+      .switch .track { width: 38px; height: 21px; border-radius: 99px; background: oklch(0.245 0.006 256); border: 1px solid var(--border-strong);
+        position: relative; transition: all 0.18s; flex: none; }
+      .switch .track .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 99px;
+        background: var(--muted-foreground); transition: all 0.18s; }
+      .switch.on .track { background: oklch(0.86 0.19 128 / 0.9); border-color: transparent; }
+      .switch.on .track .knob { left: 19px; background: oklch(0.2 0.05 128); }
+      .switch .txt { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground); min-width: 64px; }
+      .switch.on .txt { color: var(--signal); }
+
+      /* page chrome */
+      .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+        padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+      .page-head h1 { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; margin-top: 4px; }
+      .page-head p { font-size: 13px; color: var(--muted-foreground); margin-top: 5px; max-width: 54ch; line-height: 1.45; }
+      .stack { display: flex; flex-direction: column; gap: 16px; }
+
+      /* telemetry strip */
+      .link-strip { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+      .link-strip .read { display: flex; align-items: center; gap: 10px; }
+      .link-strip .big { font-family: var(--font-mono); font-size: 16px; font-weight: 600; }
+      .link-strip .big .on { color: var(--signal); }
+      .sep { width: 1px; align-self: stretch; background: var(--border); margin: -4px 0; }
+
+      /* ---- INSTALL CARDS ---- */
+      .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; padding: 16px; }
+      .icard { position: relative; border: 1px solid var(--border); border-radius: 10px; background: oklch(0.165 0.006 256 / 0.5);
+        overflow: hidden; transition: transform 0.15s, border-color 0.15s; }
+      .icard::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; opacity: 0.8; background: transparent; }
+      .icard.tracked { border-color: oklch(0.86 0.19 128 / 0.2); }
+      .icard.tracked::before { background: linear-gradient(90deg, var(--signal), transparent 70%); }
+      .icard.attn { border-color: oklch(0.8 0.15 78 / 0.22); }
+      .icard.attn::before { background: linear-gradient(90deg, var(--warn), transparent 70%); }
+      .icard.err { border-color: oklch(0.64 0.21 22 / 0.28); }
+      .icard.err::before { background: linear-gradient(90deg, var(--destructive), transparent 70%); }
+      .icard.muted-card { opacity: 0.6; }
+      .icard:hover { transform: translateY(-1px); }
+
+      .icard-h { display: flex; align-items: flex-start; gap: 11px; padding: 13px 14px 12px; }
+      .icard-h .grow { flex: 1; min-width: 0; }
+      .icard-h .nm { font-family: var(--font-mono); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+      .icard-h .pth { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-foreground); margin-top: 4px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .icard-toolbar { display: flex; align-items: center; gap: 6px; padding: 0 14px 12px 36px; }
+      .drift { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin: 0 0 0; border-top: 1px solid var(--border);
+        font-family: var(--font-mono); font-size: 11px; color: var(--warn); background: oklch(0.8 0.15 78 / 0.06); }
+      .hint { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border);
+        font-family: var(--font-mono); font-size: 11px; color: var(--signal); background: oklch(0.86 0.19 128 / 0.06); }
+
+      .sect { padding: 12px 14px; border-top: 1px solid var(--border); }
+      .sect-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+      .cell { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.01em; }
+      .cell.ok { color: var(--signal); }
+      .cell.warn { color: var(--warn); }
+      .cell.err { color: var(--destructive); }
+
+      .stats { display: flex; gap: 22px; align-items: flex-end; }
+      .stat { border-top: 1px solid oklch(1 0 0 / 0.12); padding-top: 6px; min-width: 58px; }
+      .stat .l { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-foreground); }
+      .stat .v { font-family: var(--font-mono); font-size: 19px; font-weight: 500; line-height: 1.2; }
+      .stat .v.on { color: var(--signal); }
+
+      .meter { height: 6px; border-radius: 99px; background: oklch(0.245 0.006 256 / 0.8); overflow: hidden; }
+      .meter > i { display: block; height: 100%; background: var(--signal); border-radius: 99px; }
+      .meter > i.anim { animation: pulse 1.6s ease-in-out infinite; }
+      @keyframes pulse { 0%,100% { opacity: 0.72; } 50% { opacity: 1; } }
+      .spin { display: inline-block; color: var(--signal); animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .errbox { font-family: var(--font-mono); font-size: 11px; line-height: 1.5; color: oklch(0.78 0.12 22);
+        background: oklch(0.64 0.21 22 / 0.08); border: 1px solid oklch(0.64 0.21 22 / 0.2); border-radius: 6px; padding: 8px 10px; }
+
+      .note { display: flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); padding: 0 2px 4px; }
+      .note .k { color: var(--foreground); }
+      .section-label { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 10px;
+        letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-foreground); margin: 8px 2px 0; }
+      .section-label::after { content: ""; height: 1px; flex: 1; background: var(--border); }
+
+      .stagger > * { animation: rise 0.5s ease both; }
+      .stagger > *:nth-child(1) { animation-delay: 0.03s; }
+      .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+      .stagger > *:nth-child(3) { animation-delay: 0.17s; }
+      .stagger > *:nth-child(4) { animation-delay: 0.24s; }
+      @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      .annot { font-family: var(--font-mono); font-size: 11px; line-height: 1.55; color: var(--muted-foreground);
+        border-left: 2px solid oklch(0.86 0.19 128 / 0.4); padding: 2px 0 2px 14px; margin: 0 auto 22px; max-width: 880px; }
+      .annot b { color: var(--signal); font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="annot">
+      <b>Track toggle.</b> Per-install telemetry is now a switch — “Tracked / off” — instead of a Configure button. Flipping
+      it on writes the canonical config (backed up); off restores the backup. The card body is now purely race data. The
+      third state — config exists but isn’t canonical (e.g. after an endpoint change) — shows as <b>tracked + a “config
+      differs · Re-apply” strip</b>, not a hidden binary. Click the switches to feel it.
+    </div>
+
+    <div class="wrap stagger">
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Settings</span>
+          <h1>Telemetry &amp; game data</h1>
+          <p>Listen on one endpoint, choose which installs stream to it, and keep their race data in sync.</p>
+        </div>
+        <span class="chip live"><span class="dot on"></span>READY</span>
+      </div>
+
+      <div class="stack">
+        <!-- ONE-TIME ENDPOINT STRIP -->
+        <div class="panel">
+          <header>
+            <h2><span class="dot on"></span>Recorder endpoint <span class="muted" style="letter-spacing:0.04em;text-transform:none;font-size:10px">· one-time</span></h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn ghost sm">Edit endpoint</button>
+              <button class="btn sm">◉ Probe 5s</button>
+            </div>
+          </header>
+          <div class="body">
+            <div class="link-strip">
+              <div class="read"><span class="label">Listening</span><span class="big mono">127.0.0.1<span class="muted">:</span>9001</span></div>
+              <div class="sep"></div>
+              <div class="read"><span class="label">Last probe</span><span class="big mono"><span class="on">92.4 Hz</span></span><span class="footnote">· 2,310 pkts</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME INSTALLS -->
+        <div class="panel">
+          <header>
+            <h2>Game installs</h2>
+            <button class="btn sm"><span>⟳</span> Re-sync all</button>
+          </header>
+          <div class="body" style="padding:14px 16px 4px">
+            <div class="note"><span class="dot off"></span>Toggle an install to stream its telemetry here. Re-sync after a <span class="k">Liftoff</span> or <span class="k">Companion</span> update.</div>
+          </div>
+          <div class="cards" style="padding-top:6px">
+            <!-- TRACKED + FRESH -->
+            <div class="icard tracked">
+              <div class="icard-h">
+                <span class="dot on" style="margin-top:5px"></span>
+                <div class="grow">
+                  <div class="nm">Liftoff <span class="badge">Steam</span></div>
+                  <div class="pth">…/steamapps/common/Liftoff</div>
+                </div>
+                <div class="switch on" onclick="toggleCard(this)"><span class="txt">Tracked</span><span class="track"><span class="knob"></span></span></div>
+              </div>
+              <div class="sect">
+                <div class="sect-h"><span class="label">Race data</span><span class="footnote">fresh · Jun 2</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+                  <div class="stats">
+                    <div class="stat"><div class="l">Races</div><div class="v on">248</div></div>
+                    <div class="stat"><div class="l">Tracks</div><div class="v">31</div></div>
+                  </div>
+                  <button class="btn ghost xs">⟳ Re-sync</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- UNTRACKED + SYNCING -->
+            <div class="icard">
+              <div class="icard-h">
+                <span class="dot off" style="margin-top:5px"></span>
+                <div class="grow">
+                  <div class="nm">Liftoff: Micro Drones <span class="badge">.app</span></div>
+                  <div class="pth">/Applications/Liftoff Micro Drones.app</div>
+                </div>
+                <div class="switch" onclick="toggleCard(this)"><span class="txt">Off</span><span class="track"><span class="knob"></span></span></div>
+              </div>
+              <div class="sect">
+                <div class="sect-h"><span class="label">Race data</span><span class="cell"><span class="spin">⟳</span> extracting…</span></div>
+                <div class="meter"><i class="anim" style="width:62%"></i></div>
+                <div class="footnote" style="margin-top:7px">scene 14/22 · 9 races found · building geometry</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footnote" style="display:flex;align-items:center;gap:8px;padding:2px 4px">
+          <span class="dot on"></span> Game logs auto-detected · 2 tailing — no setup needed
+        </div>
+
+        <!-- STATES REFERENCE -->
+        <div class="section-label">Card states · reference</div>
+        <div class="cards" style="padding:4px 0 0">
+          <!-- TRACKED, CONFIG DIFFERS -->
+          <div class="icard attn">
+            <div class="icard-h">
+              <span class="dot on" style="margin-top:5px"></span>
+              <div class="grow"><div class="nm">Liftoff <span class="badge">Steam</span></div><div class="pth">…/common/Liftoff</div></div>
+              <div class="switch on"><span class="txt">Tracked</span><span class="track"><span class="knob"></span></span></div>
+            </div>
+            <div class="drift"><span class="dot warn"></span>config differs from canonical <span style="flex:1"></span><button class="btn warnlink xs">Re-apply</button></div>
+            <div class="sect">
+              <div class="sect-h"><span class="label">Race data</span><span class="footnote">fresh · Jun 2</span></div>
+              <div class="stats"><div class="stat"><div class="l">Races</div><div class="v on">248</div></div><div class="stat"><div class="l">Tracks</div><div class="v">31</div></div></div>
+            </div>
+          </div>
+
+          <!-- JUST TRACKED · transient hint -->
+          <div class="icard tracked">
+            <div class="icard-h">
+              <span class="dot on" style="margin-top:5px"></span>
+              <div class="grow"><div class="nm">Liftoff: Micro Drones <span class="badge">.app</span></div><div class="pth">…/Micro Drones.app</div></div>
+              <div class="switch on"><span class="txt">Tracked</span><span class="track"><span class="knob"></span></span></div>
+            </div>
+            <div class="hint"><span class="dot on"></span>config written · reset your drone in Liftoff to re-read it</div>
+            <div class="sect">
+              <div class="sect-h"><span class="label">Race data</span><span class="cell warn"><span class="dot warn"></span>stale</span></div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+                <div class="stats"><div class="stat"><div class="l">Races</div><div class="v">96</div></div><div class="stat"><div class="l">Tracks</div><div class="v">12</div></div></div>
+                <button class="btn primary xs">Re-sync</button>
+              </div>
+              <div class="footnote" style="margin-top:9px">game files changed Jun 4</div>
+            </div>
+          </div>
+
+          <!-- ERROR -->
+          <div class="icard err">
+            <div class="icard-h">
+              <span class="dot err" style="margin-top:5px"></span>
+              <div class="grow"><div class="nm">Liftoff <span class="badge">Steam</span></div><div class="pth">…/common/Liftoff</div></div>
+              <div class="switch on"><span class="txt">Tracked</span><span class="track"><span class="knob"></span></span></div>
+            </div>
+            <div class="sect">
+              <div class="sect-h"><span class="label">Race data</span><span class="cell err">✕ extraction failed</span></div>
+              <div class="errbox">Couldn't read scene bundle <span class="muted">level_arena_03</span> — file missing or unreadable.</div>
+              <div style="margin-top:9px"><button class="btn danger xs">Retry</button></div>
+            </div>
+          </div>
+
+          <!-- NOT DETECTED -->
+          <div class="icard muted-card">
+            <div class="icard-h">
+              <span class="dot off" style="margin-top:5px"></span>
+              <div class="grow"><div class="nm">Liftoff: Micro Drones</div><div class="pth">not detected on this machine</div></div>
+              <div class="switch" style="opacity:0.4;pointer-events:none"><span class="txt">Off</span><span class="track"><span class="knob"></span></span></div>
+            </div>
+            <div class="sect"><span class="footnote" style="line-height:1.55">Install not found. Launch it once so it writes its data folder, or it isn't installed.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleCard(sw) {
+        const on = sw.classList.toggle("on");
+        sw.querySelector(".txt").textContent = on ? "Tracked" : "Off";
+        const card = sw.closest(".icard");
+        const dot = card.querySelector(".icard-h .dot");
+        card.classList.toggle("tracked", on);
+        dot.classList.toggle("on", on);
+        dot.classList.toggle("off", !on);
+      }
+    </script>
+  </body>
+</html>

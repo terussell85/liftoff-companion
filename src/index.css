@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-signal: var(--signal);
+  --color-warn: var(--warn);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 3px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 3px);
+
+  --font-sans: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/*
+ * Avionics / instrument-cluster theme. Fixed dark "cockpit" palette with a
+ * phosphor-lime signal accent used sparingly for live/active state.
+ */
+:root,
+.dark {
+  --radius: 0.5rem;
+
+  --background: oklch(0.165 0.006 256);
+  --foreground: oklch(0.93 0.004 256);
+
+  --card: oklch(0.205 0.007 256);
+  --card-foreground: oklch(0.93 0.004 256);
+  --popover: oklch(0.2 0.007 256);
+  --popover-foreground: oklch(0.93 0.004 256);
+
+  /* phosphor lime — oscilloscope trace / FPV OSD */
+  --signal: oklch(0.86 0.19 128);
+  --primary: oklch(0.86 0.19 128);
+  --primary-foreground: oklch(0.2 0.05 128);
+
+  --secondary: oklch(0.26 0.006 256);
+  --secondary-foreground: oklch(0.93 0.004 256);
+  --muted: oklch(0.245 0.006 256);
+  --muted-foreground: oklch(0.64 0.012 256);
+  --accent: oklch(0.275 0.007 256);
+  --accent-foreground: oklch(0.95 0.004 256);
+
+  --destructive: oklch(0.64 0.21 22);
+  --destructive-foreground: oklch(0.97 0.01 22);
+  --warn: oklch(0.8 0.15 78);
+
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.86 0.19 128 / 50%);
+
+  --chart-1: oklch(0.86 0.19 128);
+  --chart-2: oklch(0.7 0.15 200);
+  --chart-3: oklch(0.8 0.15 78);
+  --chart-4: oklch(0.65 0.2 25);
+  --chart-5: oklch(0.72 0.16 300);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(
+        130% 90% at 50% -15%,
+        oklch(0.23 0.02 256 / 0.7),
+        transparent 62%
+      ),
+      var(--background);
+    overflow: hidden;
+  }
+
+  /* faint instrument grid, masked toward the top */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, oklch(1 0 0 / 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(1 0 0 / 0.02) 1px, transparent 1px);
+    background-size: 34px 34px;
+    -webkit-mask-image: radial-gradient(
+      125% 95% at 50% 0%,
+      black,
+      transparent 78%
+    );
+    mask-image: radial-gradient(125% 95% at 50% 0%, black, transparent 78%);
+  }
+
+  ::selection {
+    background: oklch(0.86 0.19 128 / 0.25);
+  }
+
+  /* native-feel thin scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.1);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 0.18);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+  }
+}
+
+@layer components {
+  /* Panels read as machined surfaces: hairline border + top inset highlight, no big shadow. */
+  [data-slot="card"] {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.04),
+      0 1px 2px oklch(0 0 0 / 0.3);
+    background-image: linear-gradient(
+      to bottom,
+      oklch(1 0 0 / 0.012),
+      transparent 120px
+    );
+  }
+
+  /* uppercase mono "instrument label" */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--signal);
+  }
+}
